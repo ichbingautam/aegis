@@ -1,0 +1,128 @@
+[project]
+name = "aegis"
+version = "0.1.0"
+description = "Scalable Distributed Reinforcement Learning Framework"
+readme = "README.md"
+license = { text = "MIT" }
+authors = [{ name = "Gautam Shubham" }]
+requires-python = ">=3.10"
+keywords = ["reinforcement-learning", "distributed", "jax", "ray", "ppo", "vmpo"]
+classifiers = [
+    "Development Status :: 3 - Alpha",
+    "Intended Audience :: Science/Research",
+    "License :: OSI Approved :: MIT License",
+    "Programming Language :: Python :: 3.10",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+    "Topic :: Scientific/Engineering :: Artificial Intelligence",
+]
+
+dependencies = [
+    "jax>=0.4.20",
+    "jaxlib>=0.4.20",
+    "flax>=0.8.0",
+    "optax>=0.1.7",
+    "ray[default]>=2.9.0",
+    "grpcio>=1.60.0",
+    "grpcio-tools>=1.60.0",
+    "gymnasium>=0.29.0",
+    "gymnasium[atari]>=0.29.0",
+    "gymnasium[mujoco]>=0.29.0",
+    "hydra-core>=1.3.0",
+    "omegaconf>=2.3.0",
+    "tensorboard>=2.15.0",
+    "wandb>=0.16.0",
+    "numpy>=1.24.0",
+    "dm-haiku>=0.0.12",
+    "chex>=0.1.8",
+    "distrax>=0.1.5",
+    "rlax>=0.1.6",
+    "tqdm>=4.66.0",
+]
+
+[project.optional-dependencies]
+dev = [
+    "pytest>=7.0",
+    "pytest-asyncio>=0.23.0",
+    "pytest-cov>=4.1.0",
+    "black>=23.0",
+    "ruff>=0.1.0",
+    "mypy>=1.7.0",
+    "pre-commit>=3.6.0",
+]
+cython = [
+    "cython>=3.0.0",
+]
+
+[project.scripts]
+aegis-train = "aegis.train:main"
+aegis-bench = "aegis.benchmarks.scaling:main"
+
+[project.urls]
+Homepage = "https://github.com/ichbingautam/aegis"
+Documentation = "https://github.com/ichbingautam/aegis#readme"
+Repository = "https://github.com/ichbingautam/aegis"
+
+[build-system]
+requires = ["setuptools>=61.0", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[tool.setuptools.packages.find]
+where = ["."]
+include = ["aegis*"]
+
+[tool.setuptools.package-data]
+aegis = ["py.typed"]
+
+[tool.black]
+line-length = 100
+target-version = ["py310", "py311", "py312"]
+include = '\.pyi?$'
+exclude = '''
+/(
+    \.git
+  | \.hg
+  | \.mypy_cache
+  | \.tox
+  | \.venv
+  | _build
+  | buck-out
+  | build
+  | dist
+)/
+'''
+
+[tool.ruff]
+line-length = 100
+target-version = "py310"
+select = [
+    "E",   # pycodestyle errors
+    "W",   # pycodestyle warnings
+    "F",   # pyflakes
+    "I",   # isort
+    "B",   # flake8-bugbear
+    "C4",  # flake8-comprehensions
+    "UP",  # pyupgrade
+]
+ignore = [
+    "E501",  # line too long (handled by black)
+    "B008",  # do not perform function calls in argument defaults
+]
+
+[tool.ruff.isort]
+known-first-party = ["aegis"]
+
+[tool.mypy]
+python_version = "3.10"
+warn_return_any = true
+warn_unused_configs = true
+disallow_untyped_defs = true
+ignore_missing_imports = true
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+asyncio_mode = "auto"
+addopts = "-v --tb=short"
+filterwarnings = [
+    "ignore::DeprecationWarning",
+]

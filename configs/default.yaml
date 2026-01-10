@@ -1,0 +1,191 @@
+# Hydra defaults
+defaults:
+  - _self_
+  - override hydra/hydra_logging: colorlog
+  - override hydra/job_logging: colorlog
+
+# =============================================================================
+# Core Scaling Parameters
+# =============================================================================
+scaling:
+  num_actors: 32                    # Total actor processes across cluster
+  num_learners: 1                   # Number of GPU learners (multi-GPU via pmap)
+  envs_per_actor: 64                # Vectorized environments per actor process
+  actors_per_buffer_shard: 8        # Actors sharing each replay buffer shard
+
+# =============================================================================
+# Rollout Configuration
+# =============================================================================
+rollout:
+  trajectory_length: 128            # Steps per trajectory chunk
+  policy_fetch_frequency: 10        # Actor fetches policy every N trajectories
+  max_policy_lag: 3                 # Maximum allowed policy version difference
+
+# =============================================================================
+# Training Configuration
+# =============================================================================
+training:
+  total_steps: 10_000_000           # Total environment steps
+  batch_size: 2048                  # Minibatch size for learner
+  num_epochs: 4                     # Optimization epochs per batch
+  update_frequency: 1               # Learner updates per batch received
+  warmup_steps: 10000               # Steps before learning starts
+
+  # Optimizer
+  learning_rate: 2.5e-4
+  lr_schedule: "linear"             # "constant", "linear", "cosine"
+  adam_beta1: 0.9
+  adam_beta2: 0.999
+  adam_epsilon: 1e-5
+  max_grad_norm: 0.5                # Gradient clipping
+
+# =============================================================================
+# Replay Buffer Configuration
+# =============================================================================
+replay:
+  buffer_size: 1_000_000            # Total transitions across all shards
+  priority_alpha: 0.6               # PER prioritization exponent (0=uniform)
+  priority_beta_start: 0.4          # Importance sampling weight start
+  priority_beta_end: 1.0            # Importance sampling weight end (annealed)
+  priority_epsilon: 1e-6            # Minimum priority to ensure sampling
+  prefetch_batches: 4               # Batches to prefetch for learner
+
+# =============================================================================
+# Algorithm Selection
+# =============================================================================
+algorithm:
+  name: "ppo"                       # "ppo" or "vmpo"
+
+  # Shared parameters
+  gamma: 0.99                       # Discount factor
+  gae_lambda: 0.95                  # GAE lambda for advantage estimation
+
+  # PPO-specific
+  clip_epsilon: 0.2                 # PPO clipping range [1-eps, 1+eps]
+  clip_value_loss: true             # Whether to clip value function loss
+  value_clip_epsilon: 0.2           # Value function clip range
+
+  # Loss coefficients
+  entropy_coef: 0.01                # Entropy bonus coefficient
+  value_coef: 0.5                   # Value loss coefficient
+
+  # V-trace for off-policy correction (IMPALA-style)
+  use_vtrace: true                  # Enable V-trace when policy lag > 0
+  vtrace_clip_rho: 1.0              # V-trace rho clipping
+  vtrace_clip_c: 1.0                # V-trace c clipping
+
+# =============================================================================
+# V-MPO Specific Configuration
+# =============================================================================
+vmpo:
+  top_k_fraction: 0.5               # Fraction of top advantages to use
+  eta_init: 1.0                     # Initial temperature
+  alpha_init: 5.0                   # Initial KL multiplier
+  eps_eta: 0.01                     # Temperature constraint threshold
+  eps_alpha: 0.1                    # KL constraint threshold
+  dual_lr: 1e-2                     # Learning rate for dual variables
+
+# =============================================================================
+# Network Architecture
+# =============================================================================
+network:
+  # Encoder type
+  encoder: "cnn"                    # "cnn" for images, "mlp" for vectors
+
+  # CNN encoder (Atari-style)
+  cnn_channels: [32, 64, 64]
+  cnn_kernels: [8, 4, 3]
+  cnn_strides: [4, 2, 1]
+
+  # MLP layers (shared trunk)
+  hidden_sizes: [256, 256]
+  activation: "relu"                # "relu", "tanh", "elu", "swish"
+
+  # Initialization
+  kernel_init: "orthogonal"         # "orthogonal", "xavier", "kaiming"
+  kernel_scale: 1.0
+
+  # Output heads
+  policy_head_layers: [64]
+  value_head_layers: [64]
+
+# =============================================================================
+# Environment Configuration
+# =============================================================================
+env:
+  name: "PongNoFrameskip-v4"        # Gymnasium environment ID
+
+  # Atari preprocessing
+  frame_stack: 4                    # Number of stacked frames
+  frame_skip: 4                     # Action repeat
+  grayscale: true                   # Convert to grayscale
+  resize: [84, 84]                  # Resize dimensions
+  noop_max: 30                      # Max no-op actions at start
+  episodic_life: true               # End episode on life loss
+  clip_rewards: true                # Clip rewards to [-1, 1]
+
+  # Normalization (for MuJoCo-style envs)
+  normalize_obs: false              # Normalize observations
+  normalize_rewards: false          # Normalize rewards
+  clip_obs: 10.0                    # Observation clipping range
+
+# =============================================================================
+# Logging & Checkpointing
+# =============================================================================
+logging:
+  # Console logging
+  log_interval: 100                 # Steps between console logs
+
+  # TensorBoard
+  tensorboard: true
+  tensorboard_dir: "logs/tensorboard"
+
+  # Weights & Biases
+  wandb: true
+  wandb_project: "aegis"
+  wandb_entity: null                # Set to your W&B username/team
+  wandb_run_name: null              # Auto-generated if null
+  wandb_tags: []
+
+  # Checkpointing
+  save_interval: 100000             # Steps between checkpoints
+  checkpoint_dir: "checkpoints"
+  keep_last_n: 5                    # Number of checkpoints to keep
+
+# =============================================================================
+# Ray Cluster Configuration
+# =============================================================================
+ray:
+  address: "auto"                   # "auto" for existing cluster, null for local
+  num_cpus: null                    # Override detected CPUs
+  num_gpus: null                    # Override detected GPUs
+  object_store_memory: null         # Object store memory in bytes
+  dashboard_host: "0.0.0.0"
+  dashboard_port: 8265
+
+  # Actor resource allocation
+  actor_num_cpus: 1
+  actor_num_gpus: 0
+  learner_num_cpus: 2
+  learner_num_gpus: 1
+
+# =============================================================================
+# Experiment & Reproducibility
+# =============================================================================
+experiment:
+  seed: 42                          # Random seed
+  deterministic: false              # Fully deterministic (slower)
+  name: "aegis_experiment"
+  tags: []
+
+# =============================================================================
+# Hydra Configuration
+# =============================================================================
+hydra:
+  run:
+    dir: outputs/${experiment.name}/${now:%Y-%m-%d_%H-%M-%S}
+  sweep:
+    dir: multirun/${experiment.name}/${now:%Y-%m-%d_%H-%M-%S}
+    subdir: ${hydra.job.num}
+  job:
+    chdir: false
