@@ -47,9 +47,9 @@ class PPOAlgorithm(BaseAlgorithm):
         super().__init__(config)
 
         # PPO-specific hyperparameters
-        self.clip_epsilon = config.get('clip_epsilon', 0.2)
-        self.clip_value_loss = config.get('clip_value_loss', True)
-        self.value_clip_epsilon = config.get('value_clip_epsilon', 0.2)
+        self.clip_epsilon = config.get("clip_epsilon", 0.2)
+        self.clip_value_loss = config.get("clip_value_loss", True)
+        self.value_clip_epsilon = config.get("value_clip_epsilon", 0.2)
 
     def loss_fn(
         self,
@@ -106,9 +106,7 @@ class PPOAlgorithm(BaseAlgorithm):
         # Policy loss: min(ratio * A, clip(ratio) * A)
         policy_loss_unclipped = ratio * advantages
         policy_loss_clipped = clipped_ratio * advantages
-        policy_loss = -jnp.mean(
-            weights * jnp.minimum(policy_loss_unclipped, policy_loss_clipped)
-        )
+        policy_loss = -jnp.mean(weights * jnp.minimum(policy_loss_unclipped, policy_loss_clipped))
 
         # Clip fraction (for monitoring)
         clip_fraction = jnp.mean(jnp.abs(ratio - 1.0) > self.clip_epsilon)
@@ -145,23 +143,19 @@ class PPOAlgorithm(BaseAlgorithm):
         # Total Loss
         # ====================
 
-        total_loss = (
-            policy_loss
-            + self.value_coef * value_loss
-            + self.entropy_coef * entropy_loss
-        )
+        total_loss = policy_loss + self.value_coef * value_loss + self.entropy_coef * entropy_loss
 
         # Auxiliary metrics
         aux = {
-            'policy_loss': policy_loss,
-            'value_loss': value_loss,
-            'entropy': -entropy_loss,  # Positive entropy
-            'kl_divergence': approx_kl,
-            'clip_fraction': clip_fraction,
-            'ratio_mean': jnp.mean(ratio),
-            'ratio_std': jnp.std(ratio),
-            'value_pred_mean': jnp.mean(values),
-            'advantage_mean': jnp.mean(advantages),
+            "policy_loss": policy_loss,
+            "value_loss": value_loss,
+            "entropy": -entropy_loss,  # Positive entropy
+            "kl_divergence": approx_kl,
+            "clip_fraction": clip_fraction,
+            "ratio_mean": jnp.mean(ratio),
+            "ratio_std": jnp.std(ratio),
+            "value_pred_mean": jnp.mean(values),
+            "advantage_mean": jnp.mean(advantages),
         }
 
         return total_loss, aux
@@ -195,8 +189,10 @@ class PPOAlgorithm(BaseAlgorithm):
         new_params = optax.apply_updates(state.params, updates)
 
         # Compute explained variance
-        y_pred = aux.get('value_pred_mean', 0.0)
-        explained_var = 1 - jnp.var(batch.returns - batch.old_values) / (jnp.var(batch.returns) + 1e-8)
+        y_pred = aux.get("value_pred_mean", 0.0)
+        explained_var = 1 - jnp.var(batch.returns - batch.old_values) / (
+            jnp.var(batch.returns) + 1e-8
+        )
 
         # Create new state
         new_state = TrainState(
@@ -210,16 +206,16 @@ class PPOAlgorithm(BaseAlgorithm):
         # Create metrics
         metrics = Metrics(
             loss=float(loss),
-            policy_loss=float(aux['policy_loss']),
-            value_loss=float(aux['value_loss']),
-            entropy=float(aux['entropy']),
-            kl_divergence=float(aux['kl_divergence']),
-            clip_fraction=float(aux['clip_fraction']),
+            policy_loss=float(aux["policy_loss"]),
+            value_loss=float(aux["value_loss"]),
+            entropy=float(aux["entropy"]),
+            kl_divergence=float(aux["kl_divergence"]),
+            clip_fraction=float(aux["clip_fraction"]),
             explained_variance=float(explained_var),
             grad_norm=float(grad_norm),
             extra={
-                'ratio_mean': float(aux['ratio_mean']),
-                'ratio_std': float(aux['ratio_std']),
+                "ratio_mean": float(aux["ratio_mean"]),
+                "ratio_std": float(aux["ratio_std"]),
             },
         )
 
@@ -291,7 +287,10 @@ class PPOAlgorithm(BaseAlgorithm):
                     entropy=(total_metrics.entropy + metrics.entropy) / 2,
                     kl_divergence=(total_metrics.kl_divergence + metrics.kl_divergence) / 2,
                     clip_fraction=(total_metrics.clip_fraction + metrics.clip_fraction) / 2,
-                    explained_variance=(total_metrics.explained_variance + metrics.explained_variance) / 2,
+                    explained_variance=(
+                        total_metrics.explained_variance + metrics.explained_variance
+                    )
+                    / 2,
                     grad_norm=(total_metrics.grad_norm + metrics.grad_norm) / 2,
                 )
 

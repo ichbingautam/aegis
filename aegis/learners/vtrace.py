@@ -67,11 +67,7 @@ def compute_vtrace(
     # Append bootstrap value for indexing
     values_plus_bootstrap = jnp.concatenate([values, jnp.array([bootstrap_value])])
 
-    deltas = clipped_rhos * (
-        rewards
-        + gamma * values_plus_bootstrap[1:] * (1 - dones)
-        - values
-    )
+    deltas = clipped_rhos * (rewards + gamma * values_plus_bootstrap[1:] * (1 - dones) - values)
 
     # Compute V-trace targets using reverse scan
     def vtrace_step(carry, t):
@@ -82,8 +78,7 @@ def compute_vtrace(
         # Current V-trace increment
         # v_t = V_t + δ_t + γ c_t (1 - d_t) (v_{t+1} - V_{t+1})
         vtrace = (
-            deltas[t_rev]
-            + gamma * lambda_ * clipped_cs[t_rev] * (1 - dones[t_rev]) * next_vtrace
+            deltas[t_rev] + gamma * lambda_ * clipped_cs[t_rev] * (1 - dones[t_rev]) * next_vtrace
         )
 
         return vtrace, vtrace

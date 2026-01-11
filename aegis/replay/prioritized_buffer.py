@@ -9,19 +9,20 @@ buffer designed for the actor-learner architecture. It combines:
 
 from __future__ import annotations
 
-from typing import Dict, List, Optional, Tuple, Any
+from typing import Any, Dict, List, Optional, Tuple
 
 import numpy as np
 
 try:
     import ray
+
     RAY_AVAILABLE = True
 except ImportError:
     RAY_AVAILABLE = False
 
-from aegis.replay.sum_tree import SumTree, MinTree
-from aegis.replay.ring_buffer import TrajectoryBuffer
 from aegis.core.types import Batch, Trajectory
+from aegis.replay.ring_buffer import TrajectoryBuffer
+from aegis.replay.sum_tree import MinTree, SumTree
 
 
 class PrioritizedReplayBuffer:
@@ -149,7 +150,9 @@ class PrioritizedReplayBuffer:
 
         return idx
 
-    def add_trajectory(self, trajectory: Trajectory, priorities: Optional[np.ndarray] = None) -> np.ndarray:
+    def add_trajectory(
+        self, trajectory: Trajectory, priorities: Optional[np.ndarray] = None
+    ) -> np.ndarray:
         """Add a full trajectory to the buffer.
 
         Args:
@@ -204,9 +207,7 @@ class PrioritizedReplayBuffer:
         self.frame += batch_size
 
         # Sample indices proportional to priority
-        data_indices, priorities, tree_indices = self.sum_tree.batch_sample(
-            batch_size, self.rng
-        )
+        data_indices, priorities, tree_indices = self.sum_tree.batch_sample(batch_size, self.rng)
 
         # Get data
         data = self.buffer.get(data_indices)
@@ -230,15 +231,15 @@ class PrioritizedReplayBuffer:
         returns = np.zeros(batch_size, dtype=np.float32)
 
         batch = Batch(
-            observations=data['observations'],
-            actions=data['actions'],
-            rewards=data['rewards'],
-            dones=data['dones'],
-            old_log_probs=data['log_probs'],
-            old_values=data['values'],
+            observations=data["observations"],
+            actions=data["actions"],
+            rewards=data["rewards"],
+            dones=data["dones"],
+            old_log_probs=data["log_probs"],
+            old_values=data["values"],
             advantages=advantages,
             returns=returns,
-            policy_versions=data['policy_versions'],
+            policy_versions=data["policy_versions"],
             weights=weights.astype(np.float32),
             indices=tree_indices,
         )
@@ -281,6 +282,7 @@ class PrioritizedReplayBuffer:
 
 # Ray-based distributed version
 if RAY_AVAILABLE:
+
     @ray.remote
     class DistributedReplayBuffer:
         """Ray actor wrapper for distributed prioritized replay.
@@ -313,7 +315,9 @@ if RAY_AVAILABLE:
             """Add a transition."""
             return self.buffer.add(*args, **kwargs)
 
-        def add_trajectory(self, trajectory: Trajectory, priorities: Optional[np.ndarray] = None) -> np.ndarray:
+        def add_trajectory(
+            self, trajectory: Trajectory, priorities: Optional[np.ndarray] = None
+        ) -> np.ndarray:
             """Add a trajectory."""
             return self.buffer.add_trajectory(trajectory, priorities)
 
@@ -322,17 +326,17 @@ if RAY_AVAILABLE:
             batch, indices = self.buffer.sample(batch_size)
             # Convert Batch to dict for Ray serialization
             return {
-                'observations': batch.observations,
-                'actions': batch.actions,
-                'rewards': batch.rewards,
-                'dones': batch.dones,
-                'old_log_probs': batch.old_log_probs,
-                'old_values': batch.old_values,
-                'advantages': batch.advantages,
-                'returns': batch.returns,
-                'policy_versions': batch.policy_versions,
-                'weights': batch.weights,
-                'indices': batch.indices,
+                "observations": batch.observations,
+                "actions": batch.actions,
+                "rewards": batch.rewards,
+                "dones": batch.dones,
+                "old_log_probs": batch.old_log_probs,
+                "old_values": batch.old_values,
+                "advantages": batch.advantages,
+                "returns": batch.returns,
+                "policy_versions": batch.policy_versions,
+                "weights": batch.weights,
+                "indices": batch.indices,
             }, indices
 
         def update_priorities(self, indices: np.ndarray, priorities: np.ndarray) -> None:
@@ -346,8 +350,8 @@ if RAY_AVAILABLE:
         def stats(self) -> Dict[str, Any]:
             """Get buffer statistics."""
             return {
-                'size': len(self.buffer),
-                'capacity': self.buffer.capacity,
-                'beta': self.buffer.beta,
-                'max_priority': self.buffer.max_priority,
+                "size": len(self.buffer),
+                "capacity": self.buffer.capacity,
+                "beta": self.buffer.beta,
+                "max_priority": self.buffer.max_priority,
             }

@@ -55,13 +55,13 @@ class VMPOAlgorithm(BaseAlgorithm):
         super().__init__(config)
 
         # V-MPO specific hyperparameters
-        vmpo_config = config.get('vmpo', {})
-        self.top_k_fraction = vmpo_config.get('top_k_fraction', 0.5)
-        self.eta_init = vmpo_config.get('eta_init', 1.0)
-        self.alpha_init = vmpo_config.get('alpha_init', 5.0)
-        self.eps_eta = vmpo_config.get('eps_eta', 0.01)
-        self.eps_alpha = vmpo_config.get('eps_alpha', 0.1)
-        self.dual_lr = vmpo_config.get('dual_lr', 1e-2)
+        vmpo_config = config.get("vmpo", {})
+        self.top_k_fraction = vmpo_config.get("top_k_fraction", 0.5)
+        self.eta_init = vmpo_config.get("eta_init", 1.0)
+        self.alpha_init = vmpo_config.get("alpha_init", 5.0)
+        self.eps_eta = vmpo_config.get("eps_eta", 0.01)
+        self.eps_alpha = vmpo_config.get("eps_alpha", 0.1)
+        self.dual_lr = vmpo_config.get("dual_lr", 1e-2)
 
     def init_dual_params(self) -> Dict[str, float]:
         """Initialize dual variables for V-MPO.
@@ -70,8 +70,8 @@ class VMPOAlgorithm(BaseAlgorithm):
             Dictionary with 'eta' and 'alpha' parameters
         """
         return {
-            'log_eta': jnp.log(self.eta_init),
-            'log_alpha': jnp.log(self.alpha_init),
+            "log_eta": jnp.log(self.eta_init),
+            "log_alpha": jnp.log(self.alpha_init),
         }
 
     def loss_fn(
@@ -102,8 +102,8 @@ class VMPOAlgorithm(BaseAlgorithm):
             dual_params = self.init_dual_params()
 
         # Convert log params to actual values
-        eta = jnp.exp(dual_params['log_eta'])
-        alpha = jnp.exp(dual_params['log_alpha'])
+        eta = jnp.exp(dual_params["log_eta"])
+        alpha = jnp.exp(dual_params["log_alpha"])
 
         # Get current policy outputs
         log_probs, entropy, values = network.apply(
@@ -151,7 +151,9 @@ class VMPOAlgorithm(BaseAlgorithm):
 
         # Temperature constraint: E[exp(A/η)] ≤ ε_η + 1
         # Dual loss: η * (ε_η + log(E[exp(A/η)]))
-        normalized_advantages = top_k_advantages - jnp.max(top_k_advantages)  # For numerical stability
+        normalized_advantages = top_k_advantages - jnp.max(
+            top_k_advantages
+        )  # For numerical stability
         log_exp_advantages = jax.scipy.special.logsumexp(normalized_advantages / eta) - jnp.log(k)
 
         eta_loss = eta * (self.eps_eta + log_exp_advantages)
@@ -195,16 +197,16 @@ class VMPOAlgorithm(BaseAlgorithm):
 
         # Auxiliary metrics
         aux = {
-            'policy_loss': policy_loss,
-            'value_loss': value_loss,
-            'entropy': entropy_mean,
-            'kl_divergence': kl_div,
-            'eta': eta,
-            'alpha': alpha,
-            'eta_loss': eta_loss,
-            'alpha_loss': alpha_loss,
-            'top_k_advantage_mean': jnp.mean(top_k_advantages),
-            'log_exp_advantages': log_exp_advantages,
+            "policy_loss": policy_loss,
+            "value_loss": value_loss,
+            "entropy": entropy_mean,
+            "kl_divergence": kl_div,
+            "eta": eta,
+            "alpha": alpha,
+            "eta_loss": eta_loss,
+            "alpha_loss": alpha_loss,
+            "top_k_advantage_mean": jnp.mean(top_k_advantages),
+            "log_exp_advantages": log_exp_advantages,
         }
 
         return total_loss, aux
@@ -225,8 +227,8 @@ class VMPOAlgorithm(BaseAlgorithm):
         Returns:
             Tuple of (dual loss, metrics)
         """
-        eta = jnp.exp(dual_params['log_eta'])
-        alpha = jnp.exp(dual_params['log_alpha'])
+        eta = jnp.exp(dual_params["log_eta"])
+        alpha = jnp.exp(dual_params["log_alpha"])
 
         k = len(advantages)
 
@@ -240,7 +242,7 @@ class VMPOAlgorithm(BaseAlgorithm):
 
         total = eta_loss - alpha_loss
 
-        return total, {'eta_loss': eta_loss, 'alpha_loss': alpha_loss}
+        return total, {"eta_loss": eta_loss, "alpha_loss": alpha_loss}
 
     @partial(jax.jit, static_argnums=(0, 3))
     def update_step(
@@ -285,18 +287,21 @@ class VMPOAlgorithm(BaseAlgorithm):
         top_k_indices = jnp.argsort(batch.advantages)[-k:]
         top_k_advantages = batch.advantages[top_k_indices]
 
-        dual_grad_fn = jax.grad(lambda dp: self.dual_loss_fn(dp, top_k_advantages, aux['kl_divergence'])[0])
+        dual_grad_fn = jax.grad(
+            lambda dp: self.dual_loss_fn(dp, top_k_advantages, aux["kl_divergence"])[0]
+        )
         dual_grads = dual_grad_fn(dual_params)
 
         # Simple SGD update for dual variables
         new_dual_params = {
-            'log_eta': dual_params['log_eta'] - self.dual_lr * dual_grads['log_eta'],
-            'log_alpha': dual_params['log_alpha'] + self.dual_lr * dual_grads['log_alpha'],  # Ascent
+            "log_eta": dual_params["log_eta"] - self.dual_lr * dual_grads["log_eta"],
+            "log_alpha": dual_params["log_alpha"]
+            + self.dual_lr * dual_grads["log_alpha"],  # Ascent
         }
 
         # Clamp dual params to reasonable range
-        new_dual_params['log_eta'] = jnp.clip(new_dual_params['log_eta'], -5.0, 5.0)
-        new_dual_params['log_alpha'] = jnp.clip(new_dual_params['log_alpha'], -5.0, 5.0)
+        new_dual_params["log_eta"] = jnp.clip(new_dual_params["log_eta"], -5.0, 5.0)
+        new_dual_params["log_alpha"] = jnp.clip(new_dual_params["log_alpha"], -5.0, 5.0)
 
         # Create new state
         new_state = TrainState(
@@ -310,19 +315,19 @@ class VMPOAlgorithm(BaseAlgorithm):
         # Create metrics
         metrics = Metrics(
             loss=float(loss),
-            policy_loss=float(aux['policy_loss']),
-            value_loss=float(aux['value_loss']),
-            entropy=float(aux['entropy']),
-            kl_divergence=float(aux['kl_divergence']),
+            policy_loss=float(aux["policy_loss"]),
+            value_loss=float(aux["value_loss"]),
+            entropy=float(aux["entropy"]),
+            kl_divergence=float(aux["kl_divergence"]),
             clip_fraction=0.0,  # V-MPO doesn't use clipping
             explained_variance=0.0,
             grad_norm=float(grad_norm),
             extra={
-                'eta': float(aux['eta']),
-                'alpha': float(aux['alpha']),
-                'eta_loss': float(aux['eta_loss']),
-                'alpha_loss': float(aux['alpha_loss']),
-                'top_k_advantage_mean': float(aux['top_k_advantage_mean']),
+                "eta": float(aux["eta"]),
+                "alpha": float(aux["alpha"]),
+                "eta_loss": float(aux["eta_loss"]),
+                "alpha_loss": float(aux["alpha_loss"]),
+                "top_k_advantage_mean": float(aux["top_k_advantage_mean"]),
             },
         )
 

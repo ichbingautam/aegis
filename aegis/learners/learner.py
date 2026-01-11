@@ -19,13 +19,14 @@ import optax
 
 try:
     import ray
+
     RAY_AVAILABLE = True
 except ImportError:
     RAY_AVAILABLE = False
 
-from aegis.core.types import Batch, Metrics, TrainState, LearnerInfo
 from aegis.algorithms.base import BaseAlgorithm
-from aegis.learners.vtrace import compute_vtrace, compute_log_rhos
+from aegis.core.types import Batch, LearnerInfo, Metrics, TrainState
+from aegis.learners.vtrace import compute_log_rhos, compute_vtrace
 
 
 class LearnerLocal:
@@ -65,12 +66,12 @@ class LearnerLocal:
         self.algorithm = algorithm
 
         # Training settings
-        self.batch_size = config.get('batch_size', 2048)
-        self.num_epochs = config.get('num_epochs', 4)
-        self.minibatch_size = config.get('minibatch_size', 256)
-        self.use_vtrace = config.get('use_vtrace', True)
-        self.vtrace_clip_rho = config.get('vtrace_clip_rho', 1.0)
-        self.vtrace_clip_c = config.get('vtrace_clip_c', 1.0)
+        self.batch_size = config.get("batch_size", 2048)
+        self.num_epochs = config.get("num_epochs", 4)
+        self.minibatch_size = config.get("minibatch_size", 256)
+        self.use_vtrace = config.get("use_vtrace", True)
+        self.vtrace_clip_rho = config.get("vtrace_clip_rho", 1.0)
+        self.vtrace_clip_c = config.get("vtrace_clip_c", 1.0)
 
         # Initialize optimizer
         optimizer = algorithm.create_optimizer()
@@ -82,7 +83,7 @@ class LearnerLocal:
             opt_state=opt_state,
             step=0,
             policy_version=0,
-            dual_params=getattr(algorithm, 'init_dual_params', lambda: None)(),
+            dual_params=getattr(algorithm, "init_dual_params", lambda: None)(),
         )
 
         # PRNG key
@@ -244,6 +245,7 @@ class LearnerLocal:
 
 
 if RAY_AVAILABLE:
+
     @ray.remote(num_gpus=1)
     class Learner:
         """Ray actor for distributed learning on GPU.
@@ -259,7 +261,7 @@ if RAY_AVAILABLE:
             obs_shape: Tuple[int, ...],
             action_dim: int,
             continuous: bool = False,
-            algorithm_name: str = 'ppo',
+            algorithm_name: str = "ppo",
         ):
             """Initialize the distributed learner.
 
@@ -273,8 +275,9 @@ if RAY_AVAILABLE:
                 algorithm_name: Algorithm to use ('ppo' or 'vmpo')
             """
             import jax
-            from aegis.networks import create_network, init_network
+
             from aegis.algorithms import create_algorithm
+            from aegis.networks import create_network, init_network
 
             self.learner_id = learner_id
             self.config = config
@@ -303,7 +306,9 @@ if RAY_AVAILABLE:
                 initial_params=initial_params,
             )
 
-        def train_on_batch(self, batch_dict: Dict[str, Any]) -> Tuple[Dict[str, Any], Dict[str, float]]:
+        def train_on_batch(
+            self, batch_dict: Dict[str, Any]
+        ) -> Tuple[Dict[str, Any], Dict[str, float]]:
             """Train on a batch.
 
             Args:

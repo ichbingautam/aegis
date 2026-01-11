@@ -3,7 +3,7 @@
 import numpy as np
 import pytest
 
-from aegis.replay.sum_tree import SumTree, MinTree
+from aegis.replay.sum_tree import MinTree, SumTree
 
 
 class TestSumTree:
@@ -119,7 +119,7 @@ class TestMinTree:
         """Test MinTree initialization."""
         tree = MinTree(100)
         assert tree.capacity == 128
-        assert tree.min() == float('inf')
+        assert tree.min() == float("inf")
 
     def test_update_and_min(self):
         """Test updating and querying minimum."""

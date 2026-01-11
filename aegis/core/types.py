@@ -15,6 +15,7 @@ import numpy as np
 try:
     import jax
     import jax.numpy as jnp
+
     JAX_AVAILABLE = True
 except ImportError:
     jax = None

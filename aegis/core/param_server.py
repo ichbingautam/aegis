@@ -13,6 +13,7 @@ import numpy as np
 
 try:
     import ray
+
     RAY_AVAILABLE = True
 except ImportError:
     RAY_AVAILABLE = False
@@ -99,16 +100,13 @@ class ParameterServerLocal:
             Dictionary with version, step, and param count
         """
         return {
-            'version': self.version,
-            'step': self.step,
-            'num_params': sum(
-                np.prod(v.shape) for v in
-                _flatten_params(self.params).values()
-            ),
+            "version": self.version,
+            "step": self.step,
+            "num_params": sum(np.prod(v.shape) for v in _flatten_params(self.params).values()),
         }
 
 
-def _flatten_params(params: Dict[str, Any], prefix: str = '') -> Dict[str, np.ndarray]:
+def _flatten_params(params: Dict[str, Any], prefix: str = "") -> Dict[str, np.ndarray]:
     """Flatten nested parameter dictionary."""
     flat = {}
     for k, v in params.items():
@@ -121,6 +119,7 @@ def _flatten_params(params: Dict[str, Any], prefix: str = '') -> Dict[str, np.nd
 
 
 if RAY_AVAILABLE:
+
     @ray.remote
     class ParameterServer:
         """Ray actor for distributed parameter management.

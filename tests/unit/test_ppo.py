@@ -16,15 +16,15 @@ class TestPPOAlgorithm:
     def config(self):
         """Create test configuration."""
         return {
-            'gamma': 0.99,
-            'gae_lambda': 0.95,
-            'clip_epsilon': 0.2,
-            'clip_value_loss': True,
-            'value_clip_epsilon': 0.2,
-            'entropy_coef': 0.01,
-            'value_coef': 0.5,
-            'max_grad_norm': 0.5,
-            'learning_rate': 2.5e-4,
+            "gamma": 0.99,
+            "gae_lambda": 0.95,
+            "clip_epsilon": 0.2,
+            "clip_value_loss": True,
+            "value_clip_epsilon": 0.2,
+            "entropy_coef": 0.01,
+            "value_coef": 0.5,
+            "max_grad_norm": 0.5,
+            "learning_rate": 2.5e-4,
         }
 
     @pytest.fixture
@@ -52,9 +52,9 @@ class TestPPOAlgorithm:
 
     def test_init(self, ppo, config):
         """Test PPO initialization."""
-        assert ppo.clip_epsilon == config['clip_epsilon']
-        assert ppo.gamma == config['gamma']
-        assert ppo.entropy_coef == config['entropy_coef']
+        assert ppo.clip_epsilon == config["clip_epsilon"]
+        assert ppo.gamma == config["gamma"]
+        assert ppo.entropy_coef == config["entropy_coef"]
 
     def test_compute_advantages(self, ppo):
         """Test GAE advantage computation."""
@@ -69,9 +69,7 @@ class TestPPOAlgorithm:
         assert returns.shape == (T,)
 
         # Returns should be advantages + values
-        np.testing.assert_allclose(
-            returns, advantages + values[:-1], rtol=1e-5
-        )
+        np.testing.assert_allclose(returns, advantages + values[:-1], rtol=1e-5)
 
     def test_create_optimizer(self, ppo):
         """Test optimizer creation."""
@@ -118,11 +116,11 @@ class TestPPOLoss:
     def test_clipping_behavior(self):
         """Test that clipping prevents large policy updates."""
         config = {
-            'clip_epsilon': 0.2,
-            'entropy_coef': 0.0,
-            'value_coef': 0.0,
-            'gamma': 0.99,
-            'gae_lambda': 0.95,
+            "clip_epsilon": 0.2,
+            "entropy_coef": 0.0,
+            "value_coef": 0.0,
+            "gamma": 0.99,
+            "gae_lambda": 0.95,
         }
         ppo = PPOAlgorithm(config)
 

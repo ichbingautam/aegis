@@ -15,8 +15,7 @@ from typing import Generic, List, Optional, TypeVar
 
 import numpy as np
 
-
-T = TypeVar('T')
+T = TypeVar("T")
 
 
 class RingBuffer(Generic[T]):
@@ -300,13 +299,13 @@ class TrajectoryBuffer:
             Dictionary of transition arrays
         """
         return {
-            'observations': self.observations[indices],
-            'actions': self.actions[indices],
-            'rewards': self.rewards[indices],
-            'dones': self.dones[indices],
-            'log_probs': self.log_probs[indices],
-            'values': self.values[indices],
-            'policy_versions': self.policy_versions[indices],
+            "observations": self.observations[indices],
+            "actions": self.actions[indices],
+            "rewards": self.rewards[indices],
+            "dones": self.dones[indices],
+            "log_probs": self.log_probs[indices],
+            "values": self.values[indices],
+            "policy_versions": self.policy_versions[indices],
         }
 
     def __len__(self) -> int:

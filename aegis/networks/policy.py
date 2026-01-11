@@ -14,7 +14,6 @@ import flax.linen as nn
 import jax
 import jax.numpy as jnp
 
-
 # Type aliases
 Array = jax.Array
 PRNGKey = jax.Array
@@ -61,7 +60,7 @@ class CNNEncoder(nn.Module):
                 features=channels,
                 kernel_size=(kernel, kernel),
                 strides=(stride, stride),
-                padding='VALID',
+                padding="VALID",
                 dtype=self.dtype,
             )(x)
             x = self.activation(x)
@@ -143,21 +142,17 @@ class PolicyHead(nn.Module):
 
         if self.continuous:
             # Continuous: output mean and log_std
-            mean = nn.Dense(self.action_dim, name='mean')(x)
+            mean = nn.Dense(self.action_dim, name="mean")(x)
 
             # Learnable log_std (state-independent)
-            log_std = self.param(
-                'log_std',
-                nn.initializers.zeros,
-                (self.action_dim,)
-            )
+            log_std = self.param("log_std", nn.initializers.zeros, (self.action_dim,))
             log_std = jnp.clip(log_std, self.log_std_min, self.log_std_max)
             std = jnp.exp(log_std)
 
             return distrax.MultivariateNormalDiag(loc=mean, scale_diag=std)
         else:
             # Discrete: output logits
-            logits = nn.Dense(self.action_dim, name='logits')(x)
+            logits = nn.Dense(self.action_dim, name="logits")(x)
             return distrax.Categorical(logits=logits)
 
 
@@ -186,7 +181,7 @@ class ValueHead(nn.Module):
             x = nn.Dense(size)(x)
             x = self.activation(x)
 
-        value = nn.Dense(1, name='value')(x)
+        value = nn.Dense(1, name="value")(x)
         return jnp.squeeze(value, axis=-1)
 
 
@@ -214,27 +209,27 @@ class ActorCriticNetwork(nn.Module):
 
     action_dim: int
     continuous: bool = False
-    encoder: str = 'mlp'
+    encoder: str = "mlp"
     hidden_sizes: Sequence[int] = (256, 256)
     policy_hidden: Sequence[int] = ()
     value_hidden: Sequence[int] = ()
     cnn_channels: Sequence[int] = (32, 64, 64)
     cnn_kernels: Sequence[int] = (8, 4, 3)
     cnn_strides: Sequence[int] = (4, 2, 1)
-    activation: str = 'relu'
+    activation: str = "relu"
 
     def setup(self):
         """Initialize sub-modules."""
         # Get activation function
         act_fn = {
-            'relu': nn.relu,
-            'tanh': jnp.tanh,
-            'elu': nn.elu,
-            'swish': nn.swish,
+            "relu": nn.relu,
+            "tanh": jnp.tanh,
+            "elu": nn.elu,
+            "swish": nn.swish,
         }.get(self.activation, nn.relu)
 
         # Encoder
-        if self.encoder == 'cnn':
+        if self.encoder == "cnn":
             self.encoder_net = CNNEncoder(
                 channels=self.cnn_channels,
                 kernels=self.cnn_kernels,
@@ -248,7 +243,7 @@ class ActorCriticNetwork(nn.Module):
             )
 
         # Shared layers (only for CNN, MLP encoder already has them)
-        if self.encoder == 'cnn':
+        if self.encoder == "cnn":
             self.trunk = MLPEncoder(
                 hidden_sizes=self.hidden_sizes,
                 activation=act_fn,
@@ -367,21 +362,21 @@ def create_network(
 
     # Determine encoder type from observation shape
     if len(observation_shape) >= 3:
-        encoder = 'cnn'
+        encoder = "cnn"
     else:
-        encoder = 'mlp'
+        encoder = "mlp"
 
     return ActorCriticNetwork(
         action_dim=action_dim,
         continuous=continuous,
-        encoder=config.get('encoder', encoder),
-        hidden_sizes=tuple(config.get('hidden_sizes', [256, 256])),
-        policy_hidden=tuple(config.get('policy_head_layers', [])),
-        value_hidden=tuple(config.get('value_head_layers', [])),
-        cnn_channels=tuple(config.get('cnn_channels', [32, 64, 64])),
-        cnn_kernels=tuple(config.get('cnn_kernels', [8, 4, 3])),
-        cnn_strides=tuple(config.get('cnn_strides', [4, 2, 1])),
-        activation=config.get('activation', 'relu'),
+        encoder=config.get("encoder", encoder),
+        hidden_sizes=tuple(config.get("hidden_sizes", [256, 256])),
+        policy_hidden=tuple(config.get("policy_head_layers", [])),
+        value_hidden=tuple(config.get("value_head_layers", [])),
+        cnn_channels=tuple(config.get("cnn_channels", [32, 64, 64])),
+        cnn_kernels=tuple(config.get("cnn_kernels", [8, 4, 3])),
+        cnn_strides=tuple(config.get("cnn_strides", [4, 2, 1])),
+        activation=config.get("activation", "relu"),
     )
 
 

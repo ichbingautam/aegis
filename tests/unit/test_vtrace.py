@@ -6,8 +6,8 @@ import numpy as np
 import pytest
 
 from aegis.learners.vtrace import (
-    compute_vtrace,
     compute_log_rhos,
+    compute_vtrace,
     should_use_vtrace,
 )
 

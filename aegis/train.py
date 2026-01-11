@@ -37,16 +37,16 @@ def train_local(cfg: DictConfig) -> Dict[str, Any]:
     Returns:
         Dictionary of final results
     """
-    import jax
     import gymnasium as gym
+    import jax
 
-    from aegis.networks import create_network, init_network
-    from aegis.algorithms import create_algorithm
-    from aegis.replay import PrioritizedReplayBuffer
     from aegis.actors import RolloutWorkerLocal
-    from aegis.learners import LearnerLocal
+    from aegis.algorithms import create_algorithm
     from aegis.core import set_seed
     from aegis.core.utils import compute_gae_numpy
+    from aegis.learners import LearnerLocal
+    from aegis.networks import create_network, init_network
+    from aegis.replay import PrioritizedReplayBuffer
 
     logger.info("Starting local training...")
     logger.info(f"Config:\n{OmegaConf.to_yaml(cfg)}")
@@ -57,7 +57,7 @@ def train_local(cfg: DictConfig) -> Dict[str, Any]:
     # Create environment to get specs
     env = gym.make(cfg.env.name)
     obs_shape = env.observation_space.shape
-    if hasattr(env.action_space, 'n'):
+    if hasattr(env.action_space, "n"):
         action_dim = env.action_space.n
         continuous = False
     else:
@@ -157,15 +157,21 @@ def train_local(cfg: DictConfig) -> Dict[str, Any]:
                 batch, indices = buffer.sample(cfg.training.batch_size)
 
                 # Compute GAE for sampled batch
-                batch.advantages = (batch.advantages - np.mean(batch.advantages)) / (np.std(batch.advantages) + 1e-8)
+                batch.advantages = (batch.advantages - np.mean(batch.advantages)) / (
+                    np.std(batch.advantages) + 1e-8
+                )
                 batch.returns = batch.old_values + batch.advantages
 
                 # Convert to JAX
                 import jax.numpy as jnp
-                batch = batch._replace(**{
-                    k: jnp.asarray(v) for k, v in batch.__dict__.items()
-                    if isinstance(v, np.ndarray)
-                })
+
+                batch = batch._replace(
+                    **{
+                        k: jnp.asarray(v)
+                        for k, v in batch.__dict__.items()
+                        if isinstance(v, np.ndarray)
+                    }
+                )
 
                 # Train
                 state, metrics = learner.train_on_batch(batch)
@@ -202,10 +208,10 @@ def train_local(cfg: DictConfig) -> Dict[str, Any]:
     logger.info(f"Training complete! Total time: {elapsed:.1f}s, Steps: {global_step:,}")
 
     return {
-        'total_steps': global_step,
-        'elapsed_time': elapsed,
-        'steps_per_second': global_step / elapsed,
-        'final_return': actors[0].get_info().mean_episode_return,
+        "total_steps": global_step,
+        "elapsed_time": elapsed,
+        "steps_per_second": global_step / elapsed,
+        "final_return": actors[0].get_info().mean_episode_return,
     }
 
 
@@ -223,8 +229,8 @@ def train_distributed(cfg: DictConfig) -> Dict[str, Any]:
     logger.info("Starting distributed training with Ray...")
 
     # Initialize Ray
-    ray_address = cfg.ray.get('address', 'auto')
-    if ray_address == 'auto':
+    ray_address = cfg.ray.get("address", "auto")
+    if ray_address == "auto":
         ray.init()
     else:
         ray.init(address=ray_address)
@@ -236,7 +242,7 @@ def train_distributed(cfg: DictConfig) -> Dict[str, Any]:
 
     ray.shutdown()
 
-    return {'status': 'distributed training not yet implemented'}
+    return {"status": "distributed training not yet implemented"}
 
 
 @hydra.main(config_path="../configs", config_name="default", version_base=None)
@@ -247,7 +253,7 @@ def main(cfg: DictConfig) -> None:
         cfg: Hydra configuration
     """
     # Check if we should use Ray
-    use_ray = cfg.ray.get('address') is not None
+    use_ray = cfg.ray.get("address") is not None
 
     if use_ray:
         results = train_distributed(cfg)

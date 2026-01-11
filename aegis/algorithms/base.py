@@ -36,11 +36,11 @@ class BaseAlgorithm(ABC):
         self.config = config
 
         # Common hyperparameters
-        self.gamma = config.get('gamma', 0.99)
-        self.gae_lambda = config.get('gae_lambda', 0.95)
-        self.entropy_coef = config.get('entropy_coef', 0.01)
-        self.value_coef = config.get('value_coef', 0.5)
-        self.max_grad_norm = config.get('max_grad_norm', 0.5)
+        self.gamma = config.get("gamma", 0.99)
+        self.gae_lambda = config.get("gae_lambda", 0.95)
+        self.entropy_coef = config.get("entropy_coef", 0.01)
+        self.value_coef = config.get("value_coef", 0.5)
+        self.max_grad_norm = config.get("max_grad_norm", 0.5)
 
     @abstractmethod
     def loss_fn(
@@ -102,9 +102,7 @@ class BaseAlgorithm(ABC):
         def gae_step(gae, t):
             t_rev = T - 1 - t  # Reverse index
             delta = (
-                rewards[t_rev]
-                + self.gamma * values[t_rev + 1] * (1 - dones[t_rev])
-                - values[t_rev]
+                rewards[t_rev] + self.gamma * values[t_rev + 1] * (1 - dones[t_rev]) - values[t_rev]
             )
             gae = delta + self.gamma * self.gae_lambda * (1 - dones[t_rev]) * gae
             return gae, gae
@@ -121,18 +119,18 @@ class BaseAlgorithm(ABC):
         Returns:
             Optax optimizer
         """
-        lr = self.config.get('learning_rate', 2.5e-4)
-        schedule = self.config.get('lr_schedule', 'constant')
-        total_steps = self.config.get('total_steps', 1_000_000)
+        lr = self.config.get("learning_rate", 2.5e-4)
+        schedule = self.config.get("lr_schedule", "constant")
+        total_steps = self.config.get("total_steps", 1_000_000)
 
         # Learning rate schedule
-        if schedule == 'linear':
+        if schedule == "linear":
             lr_schedule = optax.linear_schedule(
                 init_value=lr,
                 end_value=0.0,
                 transition_steps=total_steps,
             )
-        elif schedule == 'cosine':
+        elif schedule == "cosine":
             lr_schedule = optax.cosine_decay_schedule(
                 init_value=lr,
                 decay_steps=total_steps,
@@ -145,9 +143,9 @@ class BaseAlgorithm(ABC):
             optax.clip_by_global_norm(self.max_grad_norm),
             optax.adam(
                 learning_rate=lr_schedule,
-                b1=self.config.get('adam_beta1', 0.9),
-                b2=self.config.get('adam_beta2', 0.999),
-                eps=self.config.get('adam_epsilon', 1e-5),
+                b1=self.config.get("adam_beta1", 0.9),
+                b2=self.config.get("adam_beta2", 0.999),
+                eps=self.config.get("adam_epsilon", 1e-5),
             ),
         )
 
@@ -169,14 +167,11 @@ def create_algorithm(name: str, config: Dict[str, Any]) -> BaseAlgorithm:
     from aegis.algorithms.vmpo import VMPOAlgorithm
 
     algorithms = {
-        'ppo': PPOAlgorithm,
-        'vmpo': VMPOAlgorithm,
+        "ppo": PPOAlgorithm,
+        "vmpo": VMPOAlgorithm,
     }
 
     if name not in algorithms:
-        raise ValueError(
-            f"Unknown algorithm: {name}. "
-            f"Available: {list(algorithms.keys())}"
-        )
+        raise ValueError(f"Unknown algorithm: {name}. " f"Available: {list(algorithms.keys())}")
 
     return algorithms[name](config)

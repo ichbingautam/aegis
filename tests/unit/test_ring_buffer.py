@@ -144,9 +144,9 @@ class TestTrajectoryBuffer:
         # Get specific indices
         data = buffer.get(np.array([1, 3]))
 
-        assert data['observations'].shape == (2, 4)
-        assert np.allclose(data['observations'][0], np.ones(4) * 1)
-        assert np.allclose(data['observations'][1], np.ones(4) * 3)
+        assert data["observations"].shape == (2, 4)
+        assert np.allclose(data["observations"][0], np.ones(4) * 1)
+        assert np.allclose(data["observations"][1], np.ones(4) * 3)
 
     def test_circular_behavior(self, buffer):
         """Test that buffer wraps around correctly."""

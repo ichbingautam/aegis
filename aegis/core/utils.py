@@ -174,9 +174,15 @@ def flatten_batch(batch_of_batches: list) -> Dict[str, jax.Array]:
     from aegis.core.types import Batch
 
     keys = [
-        "observations", "actions", "rewards", "dones",
-        "old_log_probs", "old_values", "advantages", "returns",
-        "policy_versions"
+        "observations",
+        "actions",
+        "rewards",
+        "dones",
+        "old_log_probs",
+        "old_values",
+        "advantages",
+        "returns",
+        "policy_versions",
     ]
 
     result = {}
@@ -291,11 +297,13 @@ class Timer:
     def start(self, name: str) -> None:
         """Start timing a named section."""
         import time
+
         self._start_times[name] = time.perf_counter()
 
     def stop(self, name: str) -> float:
         """Stop timing and record duration."""
         import time
+
         duration = time.perf_counter() - self._start_times[name]
         if name not in self.times:
             self.times[name] = []

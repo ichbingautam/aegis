@@ -16,11 +16,12 @@ import numpy as np
 
 try:
     import ray
+
     RAY_AVAILABLE = True
 except ImportError:
     RAY_AVAILABLE = False
 
-from aegis.core.types import Trajectory, ActorInfo
+from aegis.core.types import ActorInfo, Trajectory
 from aegis.core.utils import compute_gae_numpy
 
 
@@ -60,9 +61,10 @@ class RolloutWorkerLocal:
         self.config = config
 
         # Create environment(s)
-        self.num_envs = config.get('envs_per_actor', 1)
+        self.num_envs = config.get("envs_per_actor", 1)
         if self.num_envs > 1:
             from gymnasium.vector import SyncVectorEnv
+
             self.env = SyncVectorEnv([env_fn for _ in range(self.num_envs)])
             self.vectorized = True
         else:
@@ -75,9 +77,9 @@ class RolloutWorkerLocal:
         self.policy_version = 0
 
         # Rollout settings
-        self.trajectory_length = config.get('trajectory_length', 128)
-        self.gamma = config.get('gamma', 0.99)
-        self.gae_lambda = config.get('gae_lambda', 0.95)
+        self.trajectory_length = config.get("trajectory_length", 128)
+        self.gamma = config.get("gamma", 0.99)
+        self.gae_lambda = config.get("gae_lambda", 0.95)
 
         # State
         self.obs, _ = self.env.reset()
@@ -145,7 +147,11 @@ class RolloutWorkerLocal:
 
             # Step environment
             next_obs, reward, terminated, truncated, info = self.env.step(action_np)
-            done = terminated | truncated if isinstance(terminated, np.ndarray) else terminated or truncated
+            done = (
+                terminated | truncated
+                if isinstance(terminated, np.ndarray)
+                else terminated or truncated
+            )
 
             rewards.append(reward)
             dones.append(done)
@@ -270,6 +276,7 @@ class RolloutWorkerLocal:
 
 
 if RAY_AVAILABLE:
+
     @ray.remote
     class RolloutWorker:
         """Ray actor for distributed rollout collection.
@@ -308,7 +315,7 @@ if RAY_AVAILABLE:
             # Get env specs
             test_env = env_fn()
             obs_shape = test_env.observation_space.shape
-            if hasattr(test_env.action_space, 'n'):
+            if hasattr(test_env.action_space, "n"):
                 action_dim = test_env.action_space.n
                 continuous = False
             else:
@@ -343,6 +350,7 @@ if RAY_AVAILABLE:
         def collect_trajectory(self) -> Trajectory:
             """Collect a trajectory."""
             import jax
+
             self._rng, key = jax.random.split(self._rng)
             return self._worker.collect_trajectory(key)
 

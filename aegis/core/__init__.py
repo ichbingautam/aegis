@@ -1,15 +1,15 @@
 """Core module for Aegis framework."""
 
 from aegis.core.types import (
+    ActorInfo,
     Array,
     Batch,
+    LearnerInfo,
     Metrics,
     Params,
     PRNGKey,
-    Trajectory,
     TrainState,
-    ActorInfo,
-    LearnerInfo,
+    Trajectory,
     tree_stack,
     tree_unstack,
 )

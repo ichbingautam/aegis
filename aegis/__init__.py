@@ -18,8 +18,8 @@ Example:
 __version__ = "0.1.0"
 __author__ = "Gautam Shubham"
 
-from aegis.core.types import Batch, Trajectory
 from aegis.algorithms import create_algorithm
+from aegis.core.types import Batch, Trajectory
 
 __all__ = [
     "__version__",

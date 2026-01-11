@@ -136,7 +136,9 @@ class SumTree:
 
         return data_idx, priority, tree_idx
 
-    def batch_sample(self, batch_size: int, rng: np.random.Generator) -> Tuple[np.ndarray, np.ndarray, np.ndarray]:
+    def batch_sample(
+        self, batch_size: int, rng: np.random.Generator
+    ) -> Tuple[np.ndarray, np.ndarray, np.ndarray]:
         """Sample a batch of indices using stratified sampling.
 
         Divides the total priority into segments and samples
@@ -185,7 +187,7 @@ class SumTree:
         Returns:
             Maximum priority among all leaves
         """
-        return np.max(self.tree[self._leaf_offset:self._leaf_offset + self.size])
+        return np.max(self.tree[self._leaf_offset : self._leaf_offset + self.size])
 
     def min(self) -> float:
         """Get minimum non-zero priority.
@@ -193,7 +195,7 @@ class SumTree:
         Returns:
             Minimum positive priority
         """
-        leaves = self.tree[self._leaf_offset:self._leaf_offset + self.size]
+        leaves = self.tree[self._leaf_offset : self._leaf_offset + self.size]
         positive = leaves[leaves > 0]
         if len(positive) == 0:
             return 0.0
@@ -221,7 +223,7 @@ class MinTree:
             capacity: Maximum number of elements
         """
         self.capacity = 1 << math.ceil(math.log2(max(capacity, 2)))
-        self.tree = np.full(2 * self.capacity - 1, float('inf'), dtype=np.float64)
+        self.tree = np.full(2 * self.capacity - 1, float("inf"), dtype=np.float64)
         self._leaf_offset = self.capacity - 1
 
     def update(self, data_idx: int, value: float) -> None:
