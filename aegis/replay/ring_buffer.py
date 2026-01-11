@@ -11,7 +11,7 @@ in ring_buffer.pyx. This pure Python version serves as a fallback.
 from __future__ import annotations
 
 import threading
-from typing import Generic, List, Optional, TypeVar
+from typing import Generic, TypeVar
 
 import numpy as np
 
@@ -44,7 +44,7 @@ class RingBuffer(Generic[T]):
         self.mask = self.capacity - 1
 
         # Storage
-        self.buffer: List[Optional[T]] = [None] * self.capacity
+        self.buffer: list[T | None] = [None] * self.capacity
 
         # Indices (using atomic-like access via GIL)
         self._write_idx = 0
@@ -81,7 +81,7 @@ class RingBuffer(Generic[T]):
             self._write_idx = next_write
             return True
 
-    def push_overwrite(self, item: T) -> Optional[T]:
+    def push_overwrite(self, item: T) -> T | None:
         """Push an item, overwriting oldest if full.
 
         Args:
@@ -103,7 +103,7 @@ class RingBuffer(Generic[T]):
             self._write_idx = next_write
             return overwritten
 
-    def pop(self) -> Optional[T]:
+    def pop(self) -> T | None:
         """Pop an item from the buffer.
 
         Returns:
@@ -119,7 +119,7 @@ class RingBuffer(Generic[T]):
             self._read_idx = (self._read_idx + 1) & self.mask
             return item
 
-    def peek(self) -> Optional[T]:
+    def peek(self) -> T | None:
         """Peek at the oldest item without removing it.
 
         Returns:

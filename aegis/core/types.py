@@ -7,7 +7,7 @@ the framework, including Trajectory and Batch dataclasses.
 from __future__ import annotations
 
 from dataclasses import dataclass, field
-from typing import Any, Dict, Optional, Tuple, Union
+from typing import Any
 
 import numpy as np
 
@@ -24,8 +24,8 @@ except ImportError:
 
 
 # Type aliases
-Array = Union[np.ndarray, Any]  # jax.Array when available
-Params = Dict[str, Any]
+Array = np.ndarray | Any  # jax.Array when available
+Params = dict[str, Any]
 PRNGKey = Any  # jax.Array when available
 
 
@@ -131,8 +131,8 @@ class Batch:
     advantages: Array
     returns: Array
     policy_versions: Array
-    weights: Optional[Array] = None
-    indices: Optional[Array] = None
+    weights: Array | None = None
+    indices: Array | None = None
 
     @property
     def batch_size(self) -> int:
@@ -194,7 +194,7 @@ class TrainState:
     opt_state: Any
     step: int = 0
     policy_version: int = 0
-    dual_params: Optional[Dict[str, float]] = None
+    dual_params: dict[str, float] | None = None
 
     def increment_step(self) -> TrainState:
         """Return new state with incremented step."""
@@ -241,9 +241,9 @@ class Metrics:
     clip_fraction: float = 0.0
     explained_variance: float = 0.0
     grad_norm: float = 0.0
-    extra: Dict[str, float] = field(default_factory=dict)
+    extra: dict[str, float] = field(default_factory=dict)
 
-    def to_dict(self) -> Dict[str, float]:
+    def to_dict(self) -> dict[str, float]:
         """Convert to dictionary for logging."""
         d = {
             "loss/total": self.loss,

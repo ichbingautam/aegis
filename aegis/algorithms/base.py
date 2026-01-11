@@ -7,7 +7,7 @@ enabling algorithm-agnostic training and fair benchmarking.
 from __future__ import annotations
 
 from abc import ABC, abstractmethod
-from typing import Any, Dict, Tuple
+from typing import Any
 
 import jax
 import jax.numpy as jnp
@@ -27,7 +27,7 @@ class BaseAlgorithm(ABC):
         config: Algorithm configuration dictionary
     """
 
-    def __init__(self, config: Dict[str, Any]):
+    def __init__(self, config: dict[str, Any]):
         """Initialize the algorithm.
 
         Args:
@@ -45,10 +45,10 @@ class BaseAlgorithm(ABC):
     @abstractmethod
     def loss_fn(
         self,
-        params: Dict[str, Any],
+        params: dict[str, Any],
         batch: Batch,
         network: Any,
-    ) -> Tuple[jax.Array, Dict[str, Any]]:
+    ) -> tuple[jax.Array, dict[str, Any]]:
         """Compute the loss function.
 
         Args:
@@ -67,7 +67,7 @@ class BaseAlgorithm(ABC):
         state: TrainState,
         batch: Batch,
         network: Any,
-    ) -> Tuple[TrainState, Metrics]:
+    ) -> tuple[TrainState, Metrics]:
         """Perform one optimization step.
 
         Args:
@@ -85,7 +85,7 @@ class BaseAlgorithm(ABC):
         rewards: jax.Array,
         values: jax.Array,
         dones: jax.Array,
-    ) -> Tuple[jax.Array, jax.Array]:
+    ) -> tuple[jax.Array, jax.Array]:
         """Compute GAE advantages and returns.
 
         Args:
@@ -150,7 +150,7 @@ class BaseAlgorithm(ABC):
         )
 
 
-def create_algorithm(name: str, config: Dict[str, Any]) -> BaseAlgorithm:
+def create_algorithm(name: str, config: dict[str, Any]) -> BaseAlgorithm:
     """Factory function to create algorithm by name.
 
     Args:

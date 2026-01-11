@@ -6,8 +6,8 @@ Flax (Linen API) for JAX-based training.
 
 from __future__ import annotations
 
-from functools import partial
-from typing import Any, Callable, Optional, Sequence, Tuple
+from collections.abc import Callable, Sequence
+from typing import Any
 
 import distrax
 import flax.linen as nn
@@ -55,7 +55,9 @@ class CNNEncoder(nn.Module):
         x = x.astype(self.dtype) / 255.0
 
         # Apply conv layers
-        for channels, kernel, stride in zip(self.channels, self.kernels, self.strides):
+        for channels, kernel, stride in zip(
+            self.channels, self.kernels, self.strides, strict=False
+        ):
             x = nn.Conv(
                 features=channels,
                 kernel_size=(kernel, kernel),
@@ -265,7 +267,7 @@ class ActorCriticNetwork(nn.Module):
             activation=act_fn,
         )
 
-    def __call__(self, obs: Array) -> Tuple[distrax.Distribution, Array]:
+    def __call__(self, obs: Array) -> tuple[distrax.Distribution, Array]:
         """Forward pass.
 
         Args:
@@ -290,9 +292,9 @@ class ActorCriticNetwork(nn.Module):
     def get_action_and_value(
         self,
         obs: Array,
-        key: Optional[PRNGKey] = None,
+        key: PRNGKey | None = None,
         deterministic: bool = False,
-    ) -> Tuple[Array, Array, Array, Array]:
+    ) -> tuple[Array, Array, Array, Array]:
         """Get action, log_prob, entropy, and value.
 
         Convenience method for rollout collection.
@@ -321,7 +323,7 @@ class ActorCriticNetwork(nn.Module):
         self,
         obs: Array,
         actions: Array,
-    ) -> Tuple[Array, Array, Array]:
+    ) -> tuple[Array, Array, Array]:
         """Evaluate actions under current policy.
 
         Used during learning to compute policy ratios.
@@ -342,10 +344,10 @@ class ActorCriticNetwork(nn.Module):
 
 
 def create_network(
-    observation_shape: Tuple[int, ...],
+    observation_shape: tuple[int, ...],
     action_dim: int,
     continuous: bool = False,
-    config: Optional[dict] = None,
+    config: dict | None = None,
 ) -> ActorCriticNetwork:
     """Factory function to create actor-critic network.
 
@@ -382,7 +384,7 @@ def create_network(
 
 def init_network(
     network: ActorCriticNetwork,
-    observation_shape: Tuple[int, ...],
+    observation_shape: tuple[int, ...],
     key: PRNGKey,
 ) -> dict:
     """Initialize network parameters.

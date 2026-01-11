@@ -9,7 +9,7 @@ buffer designed for the actor-learner architecture. It combines:
 
 from __future__ import annotations
 
-from typing import Any, Dict, List, Optional, Tuple
+from typing import Any
 
 import numpy as np
 
@@ -111,7 +111,7 @@ class PrioritizedReplayBuffer:
         log_prob: float,
         value: float,
         policy_version: int,
-        priority: Optional[float] = None,
+        priority: float | None = None,
     ) -> int:
         """Add a transition to the buffer.
 
@@ -151,7 +151,7 @@ class PrioritizedReplayBuffer:
         return idx
 
     def add_trajectory(
-        self, trajectory: Trajectory, priorities: Optional[np.ndarray] = None
+        self, trajectory: Trajectory, priorities: np.ndarray | None = None
     ) -> np.ndarray:
         """Add a full trajectory to the buffer.
 
@@ -195,7 +195,7 @@ class PrioritizedReplayBuffer:
 
         return indices
 
-    def sample(self, batch_size: int) -> Tuple[Batch, np.ndarray]:
+    def sample(self, batch_size: int) -> tuple[Batch, np.ndarray]:
         """Sample a batch of transitions.
 
         Args:
@@ -253,7 +253,7 @@ class PrioritizedReplayBuffer:
             tree_indices: Indices from sample() call
             priorities: New priority values (typically |TD-error|)
         """
-        for idx, priority in zip(tree_indices, priorities):
+        for idx, priority in zip(tree_indices, priorities, strict=False):
             # Convert tree index to data index
             data_idx = idx - self.sum_tree._leaf_offset
 
@@ -316,12 +316,12 @@ if RAY_AVAILABLE:
             return self.buffer.add(*args, **kwargs)
 
         def add_trajectory(
-            self, trajectory: Trajectory, priorities: Optional[np.ndarray] = None
+            self, trajectory: Trajectory, priorities: np.ndarray | None = None
         ) -> np.ndarray:
             """Add a trajectory."""
             return self.buffer.add_trajectory(trajectory, priorities)
 
-        def sample(self, batch_size: int) -> Tuple[Dict, np.ndarray]:
+        def sample(self, batch_size: int) -> tuple[dict, np.ndarray]:
             """Sample a batch."""
             batch, indices = self.buffer.sample(batch_size)
             # Convert Batch to dict for Ray serialization
@@ -347,7 +347,7 @@ if RAY_AVAILABLE:
             """Get current size."""
             return len(self.buffer)
 
-        def stats(self) -> Dict[str, Any]:
+        def stats(self) -> dict[str, Any]:
             """Get buffer statistics."""
             return {
                 "size": len(self.buffer),

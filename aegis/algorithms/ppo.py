@@ -10,7 +10,7 @@ Implements the PPO-Clip algorithm from Schulman et al. (2017) with:
 from __future__ import annotations
 
 from functools import partial
-from typing import Any, Dict, Tuple
+from typing import Any
 
 import jax
 import jax.numpy as jnp
@@ -35,7 +35,7 @@ class PPOAlgorithm(BaseAlgorithm):
         value_clip_epsilon: Clipping range for value function
     """
 
-    def __init__(self, config: Dict[str, Any]):
+    def __init__(self, config: dict[str, Any]):
         """Initialize PPO algorithm.
 
         Args:
@@ -53,10 +53,10 @@ class PPOAlgorithm(BaseAlgorithm):
 
     def loss_fn(
         self,
-        params: Dict[str, Any],
+        params: dict[str, Any],
         batch: Batch,
         network: Any,
-    ) -> Tuple[jax.Array, Dict[str, Any]]:
+    ) -> tuple[jax.Array, dict[str, Any]]:
         """Compute PPO loss.
 
         The loss has three components:
@@ -166,7 +166,7 @@ class PPOAlgorithm(BaseAlgorithm):
         state: TrainState,
         batch: Batch,
         network: Any,
-    ) -> Tuple[TrainState, Metrics]:
+    ) -> tuple[TrainState, Metrics]:
         """Perform one PPO optimization step.
 
         Args:
@@ -189,7 +189,7 @@ class PPOAlgorithm(BaseAlgorithm):
         new_params = optax.apply_updates(state.params, updates)
 
         # Compute explained variance
-        y_pred = aux.get("value_pred_mean", 0.0)
+        aux.get("value_pred_mean", 0.0)
         explained_var = 1 - jnp.var(batch.returns - batch.old_values) / (
             jnp.var(batch.returns) + 1e-8
         )
@@ -228,7 +228,7 @@ class PPOAlgorithm(BaseAlgorithm):
         network: Any,
         minibatch_size: int,
         key: jax.Array,
-    ) -> Tuple[TrainState, Metrics]:
+    ) -> tuple[TrainState, Metrics]:
         """Train for one epoch over the batch.
 
         Shuffles data and iterates over minibatches.

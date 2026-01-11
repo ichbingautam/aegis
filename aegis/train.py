@@ -15,7 +15,7 @@ from __future__ import annotations
 
 import logging
 import time
-from typing import Any, Dict, List, Optional
+from typing import Any
 
 import hydra
 import numpy as np
@@ -26,7 +26,7 @@ logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
 
-def train_local(cfg: DictConfig) -> Dict[str, Any]:
+def train_local(cfg: DictConfig) -> dict[str, Any]:
     """Run training on a single machine without Ray.
 
     Useful for development and debugging.
@@ -121,7 +121,6 @@ def train_local(cfg: DictConfig) -> Dict[str, Any]:
     # Training loop
     total_steps = cfg.training.total_steps
     log_interval = cfg.logging.log_interval
-    save_interval = cfg.logging.save_interval
 
     global_step = 0
     start_time = time.time()
@@ -215,7 +214,7 @@ def train_local(cfg: DictConfig) -> Dict[str, Any]:
     }
 
 
-def train_distributed(cfg: DictConfig) -> Dict[str, Any]:
+def train_distributed(cfg: DictConfig) -> dict[str, Any]:
     """Run distributed training with Ray.
 
     Args:

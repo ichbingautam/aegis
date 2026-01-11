@@ -4,7 +4,7 @@ from __future__ import annotations
 
 import os
 import random
-from typing import Any, Dict, Optional, Tuple
+from typing import Any
 
 import jax
 import jax.numpy as jnp
@@ -39,7 +39,7 @@ def create_prng_key(seed: int) -> jax.Array:
     return jax.random.PRNGKey(seed)
 
 
-def split_key(key: jax.Array, num: int = 2) -> Tuple[jax.Array, ...]:
+def split_key(key: jax.Array, num: int = 2) -> tuple[jax.Array, ...]:
     """Split a PRNG key into multiple subkeys.
 
     Args:
@@ -77,7 +77,7 @@ def compute_gae(
     dones: jax.Array,
     gamma: float = 0.99,
     gae_lambda: float = 0.95,
-) -> Tuple[jax.Array, jax.Array]:
+) -> tuple[jax.Array, jax.Array]:
     """Compute Generalized Advantage Estimation.
 
     GAE provides a bias-variance tradeoff in advantage estimation:
@@ -96,7 +96,6 @@ def compute_gae(
     """
     T = len(rewards)
     advantages = jnp.zeros(T)
-    last_gae = 0.0
 
     # Scan backwards to compute GAE
     def gae_step(carry, t):
@@ -134,7 +133,7 @@ def compute_gae_numpy(
     dones: np.ndarray,
     gamma: float = 0.99,
     gae_lambda: float = 0.95,
-) -> Tuple[np.ndarray, np.ndarray]:
+) -> tuple[np.ndarray, np.ndarray]:
     """Numpy implementation of GAE (for actors without JAX).
 
     Args:
@@ -162,7 +161,7 @@ def compute_gae_numpy(
     return advantages, returns
 
 
-def flatten_batch(batch_of_batches: list) -> Dict[str, jax.Array]:
+def flatten_batch(batch_of_batches: list) -> dict[str, jax.Array]:
     """Flatten a list of batches into a single batch.
 
     Args:
@@ -171,7 +170,6 @@ def flatten_batch(batch_of_batches: list) -> Dict[str, jax.Array]:
     Returns:
         Dictionary with concatenated arrays
     """
-    from aegis.core.types import Batch
 
     keys = [
         "observations",
@@ -241,14 +239,14 @@ def minibatch_iterator(batch: Any, minibatch_size: int, key: jax.Array):
     # Iterate over minibatches
     for start in range(0, batch_size, minibatch_size):
         end = min(start + minibatch_size, batch_size)
-        yield jax.tree_util.tree_map(lambda x: x[start:end], shuffled)
+        yield jax.tree_util.tree_map(lambda x, s=start, e=end: x[s:e], shuffled)
 
 
 def soft_update(
-    params: Dict[str, Any],
-    target_params: Dict[str, Any],
+    params: dict[str, Any],
+    target_params: dict[str, Any],
     tau: float = 0.005,
-) -> Dict[str, Any]:
+) -> dict[str, Any]:
     """Soft update of target network parameters.
 
     target = (1 - tau) * target + tau * source
@@ -268,7 +266,7 @@ def soft_update(
     )
 
 
-def polyak_average(params_list: list, weights: Optional[list] = None) -> Dict[str, Any]:
+def polyak_average(params_list: list, weights: list | None = None) -> dict[str, Any]:
     """Compute weighted average of multiple parameter sets.
 
     Args:
@@ -282,7 +280,7 @@ def polyak_average(params_list: list, weights: Optional[list] = None) -> Dict[st
         weights = [1.0 / len(params_list)] * len(params_list)
 
     def weighted_sum(*ps):
-        return sum(w * p for w, p in zip(weights, ps))
+        return sum(w * p for w, p in zip(weights, ps, strict=False))
 
     return jax.tree_util.tree_map(weighted_sum, *params_list)
 
@@ -314,6 +312,6 @@ class Timer:
         """Get mean time for a section."""
         return np.mean(self.times.get(name, [0.0]))
 
-    def summary(self) -> Dict[str, float]:
+    def summary(self) -> dict[str, float]:
         """Get summary of all timings."""
         return {name: self.mean(name) for name in self.times}

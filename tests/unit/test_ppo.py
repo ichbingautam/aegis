@@ -1,6 +1,5 @@
 """Unit tests for PPO algorithm implementation."""
 
-import jax
 import jax.numpy as jnp
 import numpy as np
 import pytest
@@ -122,7 +121,7 @@ class TestPPOLoss:
             "gamma": 0.99,
             "gae_lambda": 0.95,
         }
-        ppo = PPOAlgorithm(config)
+        PPOAlgorithm(config)
 
         # Simulate large policy ratio
         old_log_prob = -1.0

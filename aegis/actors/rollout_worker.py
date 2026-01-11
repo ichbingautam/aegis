@@ -10,7 +10,7 @@ Actors are CPU workers that:
 from __future__ import annotations
 
 import time
-from typing import Any, Dict, List, Optional, Tuple
+from typing import Any
 
 import numpy as np
 
@@ -22,7 +22,6 @@ except ImportError:
     RAY_AVAILABLE = False
 
 from aegis.core.types import ActorInfo, Trajectory
-from aegis.core.utils import compute_gae_numpy
 
 
 class RolloutWorkerLocal:
@@ -43,10 +42,10 @@ class RolloutWorkerLocal:
     def __init__(
         self,
         actor_id: int,
-        config: Dict[str, Any],
+        config: dict[str, Any],
         env_fn,
         network,
-        initial_params: Dict[str, Any],
+        initial_params: dict[str, Any],
     ):
         """Initialize the rollout worker.
 
@@ -89,8 +88,8 @@ class RolloutWorkerLocal:
         # Statistics
         self.total_steps = 0
         self.episodes_completed = 0
-        self.recent_returns: List[float] = []
-        self.recent_lengths: List[int] = []
+        self.recent_returns: list[float] = []
+        self.recent_lengths: list[int] = []
 
         # Timing
         self._last_time = time.time()
@@ -118,7 +117,7 @@ class RolloutWorkerLocal:
         log_probs = []
         values = []
 
-        for t in range(T):
+        for _t in range(T):
             # Get action from policy
             obs_jax = jnp.asarray(self.obs)
 
@@ -229,7 +228,7 @@ class RolloutWorkerLocal:
             actor_id=self.actor_id,
         )
 
-    def update_policy(self, params: Dict[str, Any], version: int) -> None:
+    def update_policy(self, params: dict[str, Any], version: int) -> None:
         """Update local policy copy.
 
         Args:
@@ -288,9 +287,9 @@ if RAY_AVAILABLE:
         def __init__(
             self,
             actor_id: int,
-            config: Dict[str, Any],
+            config: dict[str, Any],
             env_name: str,
-            network_config: Dict[str, Any],
+            network_config: dict[str, Any],
         ):
             """Initialize the distributed rollout worker.
 
@@ -354,7 +353,7 @@ if RAY_AVAILABLE:
             self._rng, key = jax.random.split(self._rng)
             return self._worker.collect_trajectory(key)
 
-        def update_policy(self, params: Dict[str, Any], version: int) -> None:
+        def update_policy(self, params: dict[str, Any], version: int) -> None:
             """Update local policy."""
             self._worker.update_policy(params, version)
 

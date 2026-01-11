@@ -10,12 +10,9 @@ The learner is responsible for:
 from __future__ import annotations
 
 import time
-from typing import Any, Dict, List, Optional, Tuple
+from typing import Any
 
 import jax
-import jax.numpy as jnp
-import numpy as np
-import optax
 
 try:
     import ray
@@ -46,10 +43,10 @@ class LearnerLocal:
     def __init__(
         self,
         learner_id: int,
-        config: Dict[str, Any],
+        config: dict[str, Any],
         network,
         algorithm: BaseAlgorithm,
-        initial_params: Dict[str, Any],
+        initial_params: dict[str, Any],
     ):
         """Initialize the learner.
 
@@ -95,7 +92,7 @@ class LearnerLocal:
         self._last_time = time.time()
         self._updates_since_last = 0
 
-    def train_on_batch(self, batch: Batch) -> Tuple[TrainState, Metrics]:
+    def train_on_batch(self, batch: Batch) -> tuple[TrainState, Metrics]:
         """Train on a single batch.
 
         Args:
@@ -110,7 +107,7 @@ class LearnerLocal:
         # Run multiple epochs
         all_metrics = []
 
-        for epoch in range(self.num_epochs):
+        for _epoch in range(self.num_epochs):
             self._rng, shuffle_key = jax.random.split(self._rng)
 
             # Shuffle and iterate minibatches
@@ -198,7 +195,7 @@ class LearnerLocal:
             indices=batch.indices,
         )
 
-    def get_weights(self) -> Tuple[Dict[str, Any], int]:
+    def get_weights(self) -> tuple[dict[str, Any], int]:
         """Get current policy weights.
 
         Returns:
@@ -226,7 +223,7 @@ class LearnerLocal:
             updates_per_second=updates_per_sec,
         )
 
-    def _average_metrics(self, metrics_list: List[Metrics]) -> Metrics:
+    def _average_metrics(self, metrics_list: list[Metrics]) -> Metrics:
         """Average a list of metrics."""
         if not metrics_list:
             return Metrics(0, 0, 0, 0)
@@ -256,9 +253,9 @@ if RAY_AVAILABLE:
         def __init__(
             self,
             learner_id: int,
-            config: Dict[str, Any],
-            network_config: Dict[str, Any],
-            obs_shape: Tuple[int, ...],
+            config: dict[str, Any],
+            network_config: dict[str, Any],
+            obs_shape: tuple[int, ...],
             action_dim: int,
             continuous: bool = False,
             algorithm_name: str = "ppo",
@@ -307,8 +304,8 @@ if RAY_AVAILABLE:
             )
 
         def train_on_batch(
-            self, batch_dict: Dict[str, Any]
-        ) -> Tuple[Dict[str, Any], Dict[str, float]]:
+            self, batch_dict: dict[str, Any]
+        ) -> tuple[dict[str, Any], dict[str, float]]:
             """Train on a batch.
 
             Args:
@@ -324,7 +321,7 @@ if RAY_AVAILABLE:
 
             return metrics.to_dict(), state.params
 
-        def get_weights(self) -> Tuple[Dict[str, Any], int]:
+        def get_weights(self) -> tuple[dict[str, Any], int]:
             """Get current weights."""
             return self._learner.get_weights()
 

@@ -9,7 +9,6 @@ Implements V-trace from Espeholt et al. (2018) IMPALA paper:
 from __future__ import annotations
 
 from functools import partial
-from typing import Tuple
 
 import jax
 import jax.numpy as jnp
@@ -26,7 +25,7 @@ def compute_vtrace(
     lambda_: float = 1.0,
     clip_rho: float = 1.0,
     clip_c: float = 1.0,
-) -> Tuple[jax.Array, jax.Array, jax.Array]:
+) -> tuple[jax.Array, jax.Array, jax.Array]:
     """Compute V-trace targets and advantages.
 
     V-trace corrects for off-policy data by truncating importance
@@ -114,7 +113,7 @@ def compute_vtrace_batch(
     gamma: float = 0.99,
     clip_rho: float = 1.0,
     clip_c: float = 1.0,
-) -> Tuple[jax.Array, jax.Array]:
+) -> tuple[jax.Array, jax.Array]:
     """Compute V-trace for a batch of trajectories.
 
     Vectorized version for processing multiple trajectories.

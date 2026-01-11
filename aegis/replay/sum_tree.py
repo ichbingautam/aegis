@@ -8,7 +8,6 @@ O(log N) sampling and updates.
 from __future__ import annotations
 
 import math
-from typing import Tuple
 
 import numpy as np
 
@@ -109,7 +108,7 @@ class SumTree:
         tree_idx = data_idx + self._leaf_offset
         self.update(tree_idx, priority)
 
-    def sample(self, value: float) -> Tuple[int, float, int]:
+    def sample(self, value: float) -> tuple[int, float, int]:
         """Sample a leaf proportional to priority.
 
         Args:
@@ -138,7 +137,7 @@ class SumTree:
 
     def batch_sample(
         self, batch_size: int, rng: np.random.Generator
-    ) -> Tuple[np.ndarray, np.ndarray, np.ndarray]:
+    ) -> tuple[np.ndarray, np.ndarray, np.ndarray]:
         """Sample a batch of indices using stratified sampling.
 
         Divides the total priority into segments and samples

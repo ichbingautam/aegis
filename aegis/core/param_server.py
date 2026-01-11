@@ -7,7 +7,7 @@ actors and learners in the distributed training setup.
 from __future__ import annotations
 
 import threading
-from typing import Any, Dict, Optional, Tuple
+from typing import Any
 
 import numpy as np
 
@@ -30,7 +30,7 @@ class ParameterServerLocal:
         step: Global training step
     """
 
-    def __init__(self, initial_params: Dict[str, Any]):
+    def __init__(self, initial_params: dict[str, Any]):
         """Initialize the parameter server.
 
         Args:
@@ -41,7 +41,7 @@ class ParameterServerLocal:
         self.step = 0
         self._lock = threading.Lock()
 
-    def get_weights(self) -> Tuple[Dict[str, Any], int]:
+    def get_weights(self) -> tuple[dict[str, Any], int]:
         """Get current policy weights and version.
 
         Returns:
@@ -50,7 +50,7 @@ class ParameterServerLocal:
         with self._lock:
             return self.params, self.version
 
-    def set_weights(self, params: Dict[str, Any]) -> int:
+    def set_weights(self, params: dict[str, Any]) -> int:
         """Update policy weights.
 
         Args:
@@ -93,7 +93,7 @@ class ParameterServerLocal:
         """
         return self.step
 
-    def get_info(self) -> Dict[str, Any]:
+    def get_info(self) -> dict[str, Any]:
         """Get parameter server info.
 
         Returns:
@@ -106,7 +106,7 @@ class ParameterServerLocal:
         }
 
 
-def _flatten_params(params: Dict[str, Any], prefix: str = "") -> Dict[str, np.ndarray]:
+def _flatten_params(params: dict[str, Any], prefix: str = "") -> dict[str, np.ndarray]:
     """Flatten nested parameter dictionary."""
     flat = {}
     for k, v in params.items():
@@ -128,7 +128,7 @@ if RAY_AVAILABLE:
         Uses Ray's object store for efficient parameter distribution.
         """
 
-        def __init__(self, initial_params: Dict[str, Any]):
+        def __init__(self, initial_params: dict[str, Any]):
             """Initialize the distributed parameter server.
 
             Args:
@@ -136,11 +136,11 @@ if RAY_AVAILABLE:
             """
             self._server = ParameterServerLocal(initial_params)
 
-        def get_weights(self) -> Tuple[Dict[str, Any], int]:
+        def get_weights(self) -> tuple[dict[str, Any], int]:
             """Get current policy weights and version."""
             return self._server.get_weights()
 
-        def set_weights(self, params: Dict[str, Any]) -> int:
+        def set_weights(self, params: dict[str, Any]) -> int:
             """Update policy weights."""
             return self._server.set_weights(params)
 
@@ -156,6 +156,6 @@ if RAY_AVAILABLE:
             """Get current global step."""
             return self._server.get_step()
 
-        def get_info(self) -> Dict[str, Any]:
+        def get_info(self) -> dict[str, Any]:
             """Get parameter server info."""
             return self._server.get_info()

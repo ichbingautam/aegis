@@ -9,7 +9,7 @@ Implements V-MPO from Song et al. (2020) with:
 from __future__ import annotations
 
 from functools import partial
-from typing import Any, Dict, Tuple
+from typing import Any
 
 import jax
 import jax.numpy as jnp
@@ -40,7 +40,7 @@ class VMPOAlgorithm(BaseAlgorithm):
         eps_alpha: KL constraint threshold
     """
 
-    def __init__(self, config: Dict[str, Any]):
+    def __init__(self, config: dict[str, Any]):
         """Initialize V-MPO algorithm.
 
         Args:
@@ -63,7 +63,7 @@ class VMPOAlgorithm(BaseAlgorithm):
         self.eps_alpha = vmpo_config.get("eps_alpha", 0.1)
         self.dual_lr = vmpo_config.get("dual_lr", 1e-2)
 
-    def init_dual_params(self) -> Dict[str, float]:
+    def init_dual_params(self) -> dict[str, float]:
         """Initialize dual variables for V-MPO.
 
         Returns:
@@ -76,11 +76,11 @@ class VMPOAlgorithm(BaseAlgorithm):
 
     def loss_fn(
         self,
-        params: Dict[str, Any],
+        params: dict[str, Any],
         batch: Batch,
         network: Any,
-        dual_params: Dict[str, float] = None,
-    ) -> Tuple[jax.Array, Dict[str, Any]]:
+        dual_params: dict[str, float] = None,
+    ) -> tuple[jax.Array, dict[str, Any]]:
         """Compute V-MPO loss.
 
         The loss combines:
@@ -213,10 +213,10 @@ class VMPOAlgorithm(BaseAlgorithm):
 
     def dual_loss_fn(
         self,
-        dual_params: Dict[str, float],
+        dual_params: dict[str, float],
         advantages: jax.Array,
         kl_div: float,
-    ) -> Tuple[jax.Array, Dict[str, Any]]:
+    ) -> tuple[jax.Array, dict[str, Any]]:
         """Compute dual variable update loss.
 
         Args:
@@ -250,7 +250,7 @@ class VMPOAlgorithm(BaseAlgorithm):
         state: TrainState,
         batch: Batch,
         network: Any,
-    ) -> Tuple[TrainState, Metrics]:
+    ) -> tuple[TrainState, Metrics]:
         """Perform one V-MPO optimization step.
 
         Updates both network parameters and dual variables.

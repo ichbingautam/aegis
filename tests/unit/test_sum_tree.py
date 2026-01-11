@@ -40,7 +40,7 @@ class TestSumTree:
         tree = SumTree(16)
 
         # Add initial priorities
-        for i in range(5):
+        for _i in range(5):
             tree.add(1.0)
 
         assert tree.total() == 5.0
@@ -78,7 +78,7 @@ class TestSumTree:
         rng = np.random.default_rng(42)
 
         # Add 50 priorities
-        for i in range(50):
+        for _i in range(50):
             tree.add(rng.random())
 
         # Sample a batch
@@ -96,7 +96,7 @@ class TestSumTree:
         tree = SumTree(8)  # Small capacity
 
         # Add more than capacity
-        for i in range(20):
+        for _i in range(20):
             tree.add(1.0)
 
         assert len(tree) == 8  # Capped at capacity
