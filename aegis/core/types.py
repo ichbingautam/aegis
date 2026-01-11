@@ -9,15 +9,23 @@ from __future__ import annotations
 from dataclasses import dataclass, field
 from typing import Any, Dict, Optional, Tuple, Union
 
-import jax
-import jax.numpy as jnp
 import numpy as np
+
+# JAX is optional for type definitions
+try:
+    import jax
+    import jax.numpy as jnp
+    JAX_AVAILABLE = True
+except ImportError:
+    jax = None
+    jnp = np
+    JAX_AVAILABLE = False
 
 
 # Type aliases
-Array = Union[np.ndarray, jax.Array]
+Array = Union[np.ndarray, Any]  # jax.Array when available
 Params = Dict[str, Any]
-PRNGKey = jax.Array
+PRNGKey = Any  # jax.Array when available
 
 
 @dataclass
@@ -288,6 +296,8 @@ def tree_stack(trees: list) -> Any:
     Returns:
         Single pytree with arrays stacked
     """
+    if not JAX_AVAILABLE:
+        raise ImportError("JAX is required for tree_stack")
     return jax.tree_util.tree_map(lambda *xs: jnp.stack(xs), *trees)
 
 
@@ -300,6 +310,8 @@ def tree_unstack(tree: Any) -> list:
     Returns:
         List of pytrees, one per batch element
     """
+    if not JAX_AVAILABLE:
+        raise ImportError("JAX is required for tree_unstack")
     leaves, treedef = jax.tree_util.tree_flatten(tree)
     n = leaves[0].shape[0]
     return [treedef.unflatten([leaf[i] for leaf in leaves]) for i in range(n)]
