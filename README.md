@@ -15,9 +15,19 @@ A high-throughput distributed RL system designed to **experimentally evaluate sc
 - **Algorithm-Agnostic**: Fair benchmarking platform for comparing PPO and V-MPO
 - **V-trace Off-Policy Correction**: Handles policy lag in distributed settings
 
+## 📚 Documentation
+
+For a comprehensive technical deep dive, check out the **[Aegis Guide Notebook](notebooks/aegis_guide.ipynb)**. It covers:
+
+- Complete architecture walkthrough with diagrams
+- Interactive exploration of core data structures (`Trajectory`, `Batch`)
+- Mathematical derivations of PPO and V-MPO objectives
+- Visualizations of the Replay System (SumTree, PER)
+- Scaling analysis and performance benchmarks
+
 ## 🏗️ Architecture
 
-```
+```text
 ┌─────────────────────────────────────────────────────────────────┐
 │                      Parameter Server                           │
 │              (Policy Versioning & Distribution)                 │
@@ -157,9 +167,10 @@ pytest --cov=aegis --cov-report=html
 
 ## 📁 Project Structure
 
-```
+```text
 aegis/
 ├── configs/           # Hydra configuration files
+├── notebooks/         # Documentation & guide notebooks
 ├── aegis/
 │   ├── core/          # Parameter server, types, utilities
 │   ├── replay/        # Lock-free buffer, SumTree, PER
